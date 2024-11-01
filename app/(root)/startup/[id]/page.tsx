@@ -18,7 +18,7 @@ export const experimental_ppr = true ;
 
 const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   const id = (await params).id;
-  const [post, {select: editorPosts}] = await Promise.all([
+  const [post, editorPosts] = await Promise.all([
     client.fetch(STARTUP_BY_ID_QUERY, { id }),
     client.fetch(PLAYLIST_BY_SLUG_QUERY, {slug: 'editor-picks-new' }),
   ])
@@ -77,12 +77,12 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
 
         <hr className="divider" />
 
-        {editorPosts?.length > 0 && (
+        {editorPosts?.select && editorPosts.select.length > 0 && (
           <div className="max-w-4xl mx-auto">
             <p className="text-30-semibold">Editor Picks</p>
 
             <ul className="mt-7 card_grid-sm">
-              {editorPosts.map((post: StartupTypeCard, i: number) => (
+              {editorPosts?.select?.map((post: StartupTypeCard, i: number) => (
                 <StartupCard key={i} post={post}/>
               ))}
             </ul>
