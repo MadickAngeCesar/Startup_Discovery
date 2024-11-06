@@ -43,5 +43,9 @@ export const startup = defineType ({
             name: "pitch",
             type: "markdown",
         }),
+        defineField({
+            name: "preview",
+            type: "url",
+        }),
     ],
 })
