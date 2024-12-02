@@ -63,9 +63,9 @@ const StartupCard = ({ post }: { post: StartupTypeCard }) => {
         <Image 
           src={image || "https://placehold.co/600x400"} 
           alt="placeholder" 
-          fill 
+          width={600}
+          height={400}
           className="startup-card_img object-cover" 
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
       </Link>
 
