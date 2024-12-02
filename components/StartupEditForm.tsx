@@ -21,7 +21,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-const StartupEditForm = ({ post }: { post: Startup }) => {
+const StartupEditForm = ({ post }: { post: Startup & { _type: "startup", _updatedAt: string, _rev: string } }) => {
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [pitch, setPitch] = React.useState(post.pitch || "");
   const { toast } = useToast();

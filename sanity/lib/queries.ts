@@ -18,6 +18,9 @@ export const STARTUPS_QUERY =
 export const STARTUP_BY_ID_QUERY =
   defineQuery(`*[_type == "startup" && _id == $id][0]{
   _id, 
+  _type,
+  _updatedAt,
+  _rev,
   title, 
   slug, 
   _createdAt,

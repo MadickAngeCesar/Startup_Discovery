@@ -34,13 +34,19 @@ async function deleteStartup(id: string) {
   }
 }
 
-const page = async ({ params }: { params: Promise<{ id: string }> }) => {
-  const id = (await params).id;
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+const page = async ({ params }: PageProps) => {
   const session = await auth();
   const [post, editorPosts] = await Promise.all([
-    client.fetch(STARTUP_BY_ID_QUERY, { id }),
+    client.fetch(STARTUP_BY_ID_QUERY, { id: params.id }),
     client.fetch(PLAYLIST_BY_SLUG_QUERY, { slug: "editor-picks-new" }),
   ]);
+  
   if (!post) return notFound();
 
   const parsedContent = md.render(post?.pitch || "");
@@ -61,12 +67,12 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
 
           {isAuthor && (
             <div className="flex items-center gap-2">
-              <Link href={`/startup/${id}/edit`}>
+              <Link href={`/startup/${params.id}/edit`}>
                 <Button variant="outline" size="icon">
                   <Edit className="h-4 w-4" />
                 </Button>
               </Link>
-              <form action={deleteStartup.bind(null, id)}>
+              <form action={deleteStartup.bind(null, params.id)}>
                 <Button variant="destructive" size="icon" type="submit">
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -134,7 +140,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
         )}
 
         <Suspense fallback={<Skeleton className="view_skeleton" />}>
-          <View id={id} />
+          <View id={params.id} />
         </Suspense>
       </section>
     </>
