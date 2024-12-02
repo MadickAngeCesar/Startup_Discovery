@@ -7,9 +7,11 @@ import { Author, Startup } from "@/sanity/types";
 import { Skeleton } from "./ui/skeleton";
 
 export type StartupTypeCard = Omit<Startup, "author"> & { 
-  author?: Author | null; 
-  _type?: string; 
-  _updatedAt?: string; 
+  author?: Author | null;
+  _id: string;
+  _createdAt: string;
+  _type?: string;
+  _updatedAt?: string;
   _rev?: string;
 };
 

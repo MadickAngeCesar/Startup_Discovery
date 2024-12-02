@@ -124,8 +124,8 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
             <p className="text-30-semibold">Editor Picks</p>
 
             <ul className="mt-7 card_grid-sm">
-              {editorPosts?.select?.map((post: StartupTypeCard, i: number) => (
-                <StartupCard key={i} post={post as StartupTypeCard} />
+              {editorPosts.select.map((post) => (
+                <StartupCard key={post._id} post={post as StartupTypeCard} />
               ))}
             </ul>
           </div>
