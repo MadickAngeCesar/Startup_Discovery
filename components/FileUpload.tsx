@@ -1,5 +1,6 @@
 import { ChangeEvent, useState } from 'react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
@@ -9,12 +10,20 @@ interface FileUploadProps {
 
 export function FileUpload({ onFileSelect, className, accept = "image/*" }: FileUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
       onFileSelect(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -37,6 +46,16 @@ export function FileUpload({ onFileSelect, className, accept = "image/*" }: File
         <p className="text-sm text-muted-foreground">
           Selected: {selectedFile.name}
         </p>
+      )}
+      {preview && (
+        <div className="relative w-full aspect-video rounded-lg overflow-hidden">
+          <Image
+            src={preview}
+            alt="Preview"
+            fill
+            className="object-cover"
+          />
+        </div>
       )}
     </div>
   );

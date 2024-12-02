@@ -104,6 +104,21 @@ const StartupForm = () => {
         )}
       </div>
       <div>
+        <label className="startup-form_label">Upload Image</label>
+        <FileUpload
+          onFileSelect={(file) => {
+            setSelectedFile(file);
+            setErrors(prev => {
+              const updatedErrors = { ...prev };
+              delete updatedErrors.image;
+              return updatedErrors;
+            });
+          }}
+          className="w-full"
+        />
+        {errors.image && <p className="text-sm text-red-500 mt-1">{errors.image}</p>}
+      </div>
+      <div>
         <label htmlFor="category" className="startup-form_label">
           Category
         </label>
@@ -117,17 +132,6 @@ const StartupForm = () => {
         {errors.category && (
           <p className="startup-form_error">{errors.category}</p>
         )}
-      </div>
-      <div>
-        <label className="startup-form_label">
-          Startup Image
-        </label>
-        <FileUpload 
-          onFileSelect={(file) => setSelectedFile(file)}
-          accept="image/*"
-          className="mt-3"
-        />
-        {errors.image && <p className="startup-form_error">{errors.image}</p>}
       </div>
 
       <div data-color-mode="light">
