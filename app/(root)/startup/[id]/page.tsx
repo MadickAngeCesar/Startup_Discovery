@@ -24,13 +24,13 @@ const md = markdownit();
 export const experimental_ppr = true;
 
 async function deleteStartup(id: string) {
-  'use server'
+  "use server";
   try {
     await writeClient.delete(id);
-    redirect('/');
+    redirect("/");
   } catch (error) {
-    console.error('Error deleting startup:', error);
-    throw new Error('Failed to delete startup');
+    console.error("Error deleting startup:", error);
+    throw new Error("Failed to delete startup");
   }
 }
 
@@ -54,9 +54,11 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
         <p className="sub-heading !max-w-5xl">{post.description}</p>
         <div className="flex items-center gap-4">
           <Link href={post.preview} target="_blank" rel="noopener noreferrer">
-            <button className="redirect-btn">Download from GitHub Release</button>
+            <button className="redirect-btn">
+              Download from GitHub Release
+            </button>
           </Link>
-          
+
           {isAuthor && (
             <div className="flex items-center gap-2">
               <Link href={`/startup/${id}/edit`}>
