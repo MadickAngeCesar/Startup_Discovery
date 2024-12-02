@@ -8,7 +8,8 @@ import { Send } from "lucide-react";
 import React from "react";
 import MDEditor from "@uiw/react-md-editor";
 import { z } from "zod";
-import { writeClient } from "@/sanity/lib/write-client";
+import { writeClient } from "@/app/lib/write-client";
+import { Startup } from "@/sanity/types";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -20,7 +21,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-const StartupEditForm = ({ post }: { post: any }) => {
+const StartupEditForm = ({ post }: { post: Startup }) => {
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [pitch, setPitch] = React.useState(post.pitch || "");
   const { toast } = useToast();
@@ -31,11 +32,16 @@ const StartupEditForm = ({ post }: { post: any }) => {
     const formData = new FormData(e.currentTarget);
     
     try {
-      const formValues = {
-        title: formData.get("title") as string,
-        description: formData.get("description") as string,
-        category: formData.get("category") as string,
-        link: formData.get("link") as string,
+      const title = formData.get("title")?.toString() ?? "";
+      const description = formData.get("description")?.toString() ?? "";
+      const category = formData.get("category")?.toString() ?? "";
+      const link = formData.get("link")?.toString() ?? "";
+
+      const formValues: FormData = {
+        title,
+        description,
+        category,
+        link,
         pitch,
       };
 
@@ -62,7 +68,11 @@ const StartupEditForm = ({ post }: { post: any }) => {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors = error.flatten().fieldErrors;
-        setErrors(fieldErrors as Record<string, string>);
+        const mappedErrors: Record<string, string> = {};
+        Object.keys(fieldErrors).forEach((field) => {
+          mappedErrors[field] = fieldErrors[field]?.join(", ") || "";
+        });
+        setErrors(mappedErrors);
 
         toast({
           title: "Error",
@@ -72,7 +82,7 @@ const StartupEditForm = ({ post }: { post: any }) => {
       } else {
         toast({
           title: "Error",
-          description: "An unexpected error occurred",
+          description: error instanceof Error ? error.message : "An unknown error occurred",
           variant: "destructive",
         });
       }
