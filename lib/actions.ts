@@ -6,9 +6,9 @@ import slugify from "slugify";
 import { writeClient } from "@/sanity/lib/write-client";
 
 export const createPitch = async (
-  state: any,
   form: FormData,
-  pitch: string
+  pitch: string,
+  imageUrl: string
 ) => {
   const session = await auth();
 
@@ -18,39 +18,38 @@ export const createPitch = async (
       status: "ERROR",
     });
 
-  const { title, description, category, link } = Object.fromEntries(
-    Array.from(form).filter(([key]) => key !== "pitch")
+  const { title, description, category } = Object.fromEntries(
+    form.entries()
   );
 
-  const slug = slugify(title as string, { lower: true, strict: true });
-
   try {
-    const startup = {
+    const doc = {
+      _type: "startup",
       title,
+      slug: {
+        _type: "slug",
+        current: slugify(title as string, { lower: true }),
+      },
       description,
       category,
-      image: link,
-      slug: {
-        _type: slug,
-        current: slug,
-      },
+      pitch,
+      image: imageUrl,
       author: {
         _type: "reference",
-        _ref: session?.id,
+        _ref: session.id,
       },
-      pitch,
+      views: 0,
     };
 
-    const result = await writeClient.create({ _type: "startup", ...startup });
+    const startup = await writeClient.create(doc);
 
     return parseServerActionResponse({
-      ...result,
-      error: "",
+      data: startup,
       status: "SUCCESS",
     });
   } catch (error) {
     return parseServerActionResponse({
-      error: JSON.stringify(error),
+      error: error instanceof Error ? error.message : "Error creating startup",
       status: "ERROR",
     });
   }

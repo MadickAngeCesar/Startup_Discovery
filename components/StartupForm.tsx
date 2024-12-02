@@ -10,60 +10,61 @@ import { z } from 'zod';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { createPitch } from "@/lib/actions";
+import { FileUpload } from "./FileUpload";
+import { uploadFile } from "@/lib/upload";
 
 const StartupForm = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pitch, setPitch] = React.useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
   const router = useRouter();
 
-  const handleFormSubmit = async (prevState: any, formData: FormDta) => {
+  const handleFormSubmit = async (prevState: { status?: string; error?: string }, formData: FormData) => {
     try {
+        if (!selectedFile) {
+            setErrors(prev => ({ ...prev, image: "Please select an image" }));
+            return { ...prevState, error: "Image is required", status: "Error" };
+        }
+
         const formValues = {
             title: formData.get("title") as string,
             description: formData.get("description") as string,
             category: formData.get("category") as string,
-            link: formData.get("link") as string,
+            image: selectedFile,
             pitch,
         }
 
         await formSchema.parseAsync(formValues);
 
-        const result = await createPitch(prevState, formData, pitch)
+        // Upload the image first
+        const { url: imageUrl } = await uploadFile(selectedFile);
         
-        if(result.status == 'SUCCESS'){
+        // Create the pitch with the image URL
+        const result = await createPitch(formData, pitch, imageUrl);
+        
+        if(result.status === 'SUCCESS'){
             toast({
                 title: "SUCCESS",
                 description: "Your startup pitch has been created successfully",
             });
             router.push(`/startup/${result._id}`)
+        } else {
+            toast({
+                title: "ERROR",
+                description: result.error || "An error occurred",
+                variant: "destructive"
+            });
         }
 
         return result;
     } catch (error) {
-        if(error instanceof z.ZodError){
-            const fieldErrors = error.flatten().fieldErrors;
-            setErrors(fieldErrors as unknown as Record<string, string>);
+        const errorMessage = error instanceof z.ZodError 
+            ? error.errors.map(e => e.message).join(", ")
+            : "An unexpected error occurred";
 
-            toast({
-                title: "Errors",
-                description: "Please check your inputs and try again",
-                variant: "destructive",
-            })
-
-            return { ...prevState, error: "Validation failed", status: "Error" };
-        }
-        toast({
-            title: "Errors",
-            description: "An unexpected error has occured",
-            variant: "destructive",
-        })
-
-        return {
-            ...prevState, 
-            error: "An unexpected error has occured",
-            status: "ERROR",
-        }
+        setErrors(prev => ({ ...prev, form: errorMessage }));
+        return { ...prevState, error: errorMessage, status: "Error" };
     }
   };
 
@@ -118,22 +119,20 @@ const StartupForm = () => {
         )}
       </div>
       <div>
-        <label htmlFor="link" className="startup-form_label">
-          Image URL
+        <label className="startup-form_label">
+          Startup Image
         </label>
-        <Input
-          id="link"
-          name="link"
-          className="startup-form_input"
-          required
-          placeholder="Startup Image URL"
+        <FileUpload 
+          onFileSelect={(file) => setSelectedFile(file)}
+          accept="image/*"
+          className="mt-3"
         />
-        {errors.link && <p className="startup-form_error">{errors.link}</p>}
+        {errors.image && <p className="startup-form_error">{errors.image}</p>}
       </div>
 
       <div data-color-mode="light">
         <label htmlFor="pitch" className="startup-form_label">
-          pitch
+          Pitch
         </label>
         <MDEditor
           value={pitch}
@@ -160,6 +159,20 @@ const StartupForm = () => {
         {isPending ? "Submitting ..." : "Submit"}
         <Send className="size-6 ml-2" />
       </Button>
+
+      {/* Display form-level errors from state */}
+      {state.error && (
+        <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-md">
+          {state.error}
+        </div>
+      )}
+      
+      {/* Display success message when form is submitted successfully */}
+      {state.status === "SUCCESS" && (
+        <div className="mt-4 p-4 bg-green-50 text-green-600 rounded-md">
+          Your startup pitch has been submitted successfully!
+        </div>
+      )}
     </form>
   );
 };
