@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useActionState, useState } from "react";
+import React, { useState } from "react";
 import { Input } from "./ui/input";
 import MDEditor from "@uiw/react-md-editor";
 import { Button } from "./ui/button";
@@ -15,18 +15,23 @@ import { uploadFile } from "@/lib/upload";
 
 const StartupForm = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [pitch, setPitch] = React.useState("");
+  const [pitch, setPitch] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
-  const handleFormSubmit = async (prevState: { status?: string; error?: string }, formData: FormData) => {
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
     try {
         if (!selectedFile) {
             setErrors(prev => ({ ...prev, image: "Please select an image" }));
-            return { ...prevState, error: "Image is required", status: "Error" };
+            return;
         }
 
+        const formData = new FormData(e.currentTarget);
         const formValues = {
             title: formData.get("title") as string,
             description: formData.get("description") as string,
@@ -49,32 +54,29 @@ const StartupForm = () => {
                 description: "Your startup pitch has been created successfully",
             });
             router.push(`/startup/${result._id}`)
-        } else {
-            toast({
-                title: "ERROR",
-                description: result.error || "An error occurred",
-                variant: "destructive"
-            });
         }
-
-        return result;
     } catch (error) {
-        const errorMessage = error instanceof z.ZodError 
-            ? error.errors.map(e => e.message).join(", ")
-            : "An unexpected error occurred";
-
-        setErrors(prev => ({ ...prev, form: errorMessage }));
-        return { ...prevState, error: errorMessage, status: "Error" };
+        if (error instanceof z.ZodError) {
+            const fieldErrors: Record<string, string> = {};
+            error.errors.forEach((err) => {
+                if (err.path) {
+                    fieldErrors[err.path[0]] = err.message;
+                }
+            });
+            setErrors(fieldErrors);
+        }
+        toast({
+            title: "Error",
+            description: "Failed to create startup pitch. Please try again.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
-  const [state, formAction, isPending] = useActionState(handleFormSubmit, {
-    error: "",
-    status: "INITIAL",
-  });
-
   return (
-    <form action={formAction} className="startup-form">
+    <form onSubmit={handleFormSubmit} className="startup-form">
       <div>
         <label htmlFor="title" className="startup-form_label">
           Title
@@ -158,25 +160,21 @@ const StartupForm = () => {
       <Button
         type="submit"
         className="startup-form_btn text-white"
-        disabled={isPending}
+        disabled={isSubmitting}
       >
-        {isPending ? "Submitting ..." : "Submit"}
+        {isSubmitting ? "Submitting ..." : "Submit"}
         <Send className="size-6 ml-2" />
       </Button>
 
       {/* Display form-level errors from state */}
-      {state.error && (
+      {errors.form && (
         <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-md">
-          {state.error}
+          {errors.form}
         </div>
       )}
       
       {/* Display success message when form is submitted successfully */}
-      {state.status === "SUCCESS" && (
-        <div className="mt-4 p-4 bg-green-50 text-green-600 rounded-md">
-          Your startup pitch has been submitted successfully!
-        </div>
-      )}
+      {/* Removed this section as it's not needed anymore */}
     </form>
   );
 };
