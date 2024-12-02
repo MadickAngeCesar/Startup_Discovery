@@ -1,8 +1,10 @@
 import NextAuth from "next-auth";
-import GitHub from "next-auth/providers/github";
+import GitHub, { GithubProfile } from "next-auth/providers/github";
 import { client } from "./sanity/lib/client";
 import { AUTHOR_BY_GITHUB_ID_QUERY } from "./sanity/lib/queries";
 import { writeClient } from "./sanity/lib/write-client";
+import { JWT } from "next-auth/jwt";
+import type { Session } from "next-auth";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [GitHub],
@@ -10,9 +12,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({
       user: { name, email, image },
       profile: { id, login, bio },
+    }: {
+      user: { name: string | null, email: string | null, image: string | null },
+      profile: { id: number, login: string, bio?: string | null }
     }) {
       const existingUser = await client
-        //.withConfig({ useCdn: false })
         .fetch(AUTHOR_BY_GITHUB_ID_QUERY, {
           id,
         });
@@ -31,21 +35,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       return true;
     },
-    async jwt({ token, account, profile }) {
-      if (account && profile) {
-        const user = await client
-          //.withConfig({ useCdn: false })
-          .fetch(AUTHOR_BY_GITHUB_ID_QUERY, {
-            id: profile?.id,
-          });
-
-        token.id = user?._id;
+    async session({ session, token }: { session: Session; token: JWT }) {
+      return {
+        ...session,
+        id: token.sub,
+      };
+    },
+    async jwt({ token, profile }: { token: JWT; profile: GithubProfile }) {
+      if (profile) {
+        token.id = profile.id;
       }
       return token;
-    },
-    async session({ session, token }) {
-      Object.assign(session, { id: token.id });
-      return session;
     },
   },
 });
