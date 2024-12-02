@@ -1,4 +1,3 @@
-import { auth } from "@/auth";
 import SearchForm from "@/components/SearchForm";
 import StartupCard, { StartupTypeCard } from "@/components/StartupCard";
 import { sanityFetch, SanityLive } from "@/sanity/lib/live";
@@ -9,23 +8,21 @@ export default async function Home({
 }: {
   searchParams: Promise<{ query?: string }>;
 }) {
-  const query = (await searchParams).query; 
+  const query = (await searchParams).query;
   const params = { search: query || null };
-  const session = await auth();
   const { data: posts } = await sanityFetch({ query: STARTUPS_QUERY, params });
 
   return (
     <>
       <section className="pink_container">
         <h1 className="heading">
-          Pitch Your Startup, <br /> 
-          Connect with Entrepreneurs
+          Pitch Your software product, <br />
+          let it been discovered
         </h1>
         <p className="sub-heading !max-w-3xl">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Perferendis
-          laudantium deleniti, dignissimos vero officia nostrum illo mollitia
-          vel maiores id consequuntur magni esse. Tempora, praesentium laborum
-          temporibus obcaecati quia consequuntur.
+          &quot;Let it be discovered&quot; invites exploration and growth,
+          challenging assumptions and expanding horizons, revealing that the
+          journey of knowledge is as enriching as the discoveries themselves..
         </p>
 
         <SearchForm query={query} />
@@ -38,8 +35,8 @@ export default async function Home({
 
         <ul className="mt-7 card_grid">
           {posts?.length > 0 ? (
-            posts.map((post: StartupTypeCard) => (
-              <StartupCard key={post?._id} post={post} />
+            posts.map((post) => (
+              <StartupCard key={post?._id} post={post as StartupTypeCard} />
             ))
           ) : (
             <p className="no-results">No Startups found</p>

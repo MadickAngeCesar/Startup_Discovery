@@ -7,7 +7,11 @@ import {
 } from "@/sanity/lib/queries";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { writeClient } from "@/sanity/lib/write-client";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2 } from "lucide-react";
 
 import markdownit from "markdown-it";
 import { Suspense } from "react";
@@ -19,8 +23,20 @@ const md = markdownit();
 
 export const experimental_ppr = true;
 
+async function deleteStartup(id: string) {
+  'use server'
+  try {
+    await writeClient.delete(id);
+    redirect('/');
+  } catch (error) {
+    console.error('Error deleting startup:', error);
+    throw new Error('Failed to delete startup');
+  }
+}
+
 const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   const id = (await params).id;
+  const session = await auth();
   const [post, editorPosts] = await Promise.all([
     client.fetch(STARTUP_BY_ID_QUERY, { id }),
     client.fetch(PLAYLIST_BY_SLUG_QUERY, { slug: "editor-picks-new" }),
@@ -28,6 +44,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   if (!post) return notFound();
 
   const parsedContent = md.render(post?.pitch || "");
+  const isAuthor = session?.id === post.author?._id;
 
   return (
     <>
@@ -35,9 +52,26 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
         <p className="tag">{formatDate(post?._createdAt)}</p>
         <h1 className="heading">{post.title}</h1>
         <p className="sub-heading !max-w-5xl">{post.description}</p>
-        <Link href={post.preview} target="_blank" rel="noopener noreferrer">
-          <button className="redirect-btn">View on GitHub</button>
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href={post.preview} target="_blank" rel="noopener noreferrer">
+            <button className="redirect-btn">Download from GitHub Release</button>
+          </Link>
+          
+          {isAuthor && (
+            <div className="flex items-center gap-2">
+              <Link href={`/startup/${id}/edit`}>
+                <Button variant="outline" size="icon">
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </Link>
+              <form action={deleteStartup.bind(null, id)}>
+                <Button variant="destructive" size="icon" type="submit">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </form>
+            </div>
+          )}
+        </div>
       </section>
 
       <section className="section_container">
