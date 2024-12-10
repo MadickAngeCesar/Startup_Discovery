@@ -23,6 +23,21 @@ export const createPitch = async (
   );
 
   try {
+    // First, ensure the user exists in Sanity
+    const userDoc = {
+      _type: "user",
+      _id: session.id,
+      name: session.user?.name || "Anonymous",
+      email: session.user?.email || "",
+      image: session.user?.image || "",
+    };
+
+    try {
+      await writeClient.createIfNotExists(userDoc);
+    } catch (error) {
+      console.error("Error creating user:", error);
+    }
+
     const doc = {
       _type: "startup",
       title,
