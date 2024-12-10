@@ -41,6 +41,9 @@ const StartupForm = () => {
             pitch,
         }
 
+        console.log('Form Values:', formValues);
+        console.log('Form Data:', formData);
+
         await formSchema.parseAsync(formValues);
 
         // Upload the image first
@@ -66,6 +69,7 @@ const StartupForm = () => {
             });
             setErrors(fieldErrors);
         }
+        console.log('Errors:', errors);
         toast({
             title: "Error",
             description: "Failed to create startup pitch. Please try again.",
