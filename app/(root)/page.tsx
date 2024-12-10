@@ -16,7 +16,7 @@ export default async function Home({
     <>
       <section className="pink_container">
         <h1 className="heading">
-          Pitch Your software product, <br />
+          Pitch Your software product and articles, <br />
           let it been discovered
         </h1>
         <p className="sub-heading !max-w-3xl">

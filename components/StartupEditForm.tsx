@@ -16,6 +16,7 @@ const formSchema = z.object({
   description: z.string().min(1, "Description is required"),
   category: z.string().min(1, "Category is required"),
   link: z.string().url("Must be a valid URL"),
+  preview: z.string().url("Must be a valid URL"),
   pitch: z.string().min(1, "Pitch is required"),
 });
 
@@ -36,12 +37,14 @@ const StartupEditForm = ({ post }: { post: Startup & { _type: "startup", _update
       const description = formData.get("description")?.toString() ?? "";
       const category = formData.get("category")?.toString() ?? "";
       const link = formData.get("link")?.toString() ?? "";
+      const preview = formData.get("preview")?.toString() ?? "";
 
       const formValues: FormData = {
         title,
         description,
         category,
         link,
+        preview,
         pitch,
       };
 
@@ -54,6 +57,7 @@ const StartupEditForm = ({ post }: { post: Startup & { _type: "startup", _update
           description: formValues.description,
           category: formValues.category,
           image: formValues.link,
+          preview: formValues.preview,
           pitch: formValues.pitch,
         })
         .commit();
@@ -153,6 +157,21 @@ const StartupEditForm = ({ post }: { post: Startup & { _type: "startup", _update
           defaultValue={post.image}
         />
         {errors.link && <p className="startup-form_error">{errors.link}</p>}
+      </div>
+
+      <div>
+        <label htmlFor="preview" className="startup-form_label">
+          Preview URL
+        </label>
+        <Input
+          id="preview"
+          name="preview"
+          className="startup-form_input"
+          required
+          placeholder="Startup Preview URL"
+          defaultValue={post.preview}
+        />
+        {errors.preview && <p className="startup-form_error">{errors.preview}</p>}
       </div>
 
       <div data-color-mode="light">

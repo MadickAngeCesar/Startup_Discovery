@@ -36,6 +36,7 @@ const StartupForm = () => {
             title: formData.get("title") as string,
             description: formData.get("description") as string,
             category: formData.get("category") as string,
+            preview: formData.get("preview") as string,
             image: selectedFile,
             pitch,
         }
@@ -134,6 +135,19 @@ const StartupForm = () => {
         {errors.category && (
           <p className="startup-form_error">{errors.category}</p>
         )}
+      </div>
+      <div>
+        <label htmlFor="preview" className="startup-form_label">
+          Preview URL
+        </label>
+        <Input
+          id="preview"
+          name="preview"
+          className="startup-form_input"
+          required
+          placeholder="Startup Preview URL"
+        />
+        {errors.preview && <p className="startup-form_error">{errors.preview}</p>}
       </div>
 
       <div data-color-mode="light">
