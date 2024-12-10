@@ -78,7 +78,7 @@ const StartupForm = () => {
                     title: "Success",
                     description: "Your startup pitch has been created.",
                 });
-                router.push("/dashboard");
+                router.push("/");
                 router.refresh();
             } else {
                 throw new Error(result.error || "Failed to create startup pitch");
