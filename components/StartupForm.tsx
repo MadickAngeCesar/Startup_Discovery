@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "./ui/input";
 import MDEditor from "@uiw/react-md-editor";
 import { Button } from "./ui/button";
@@ -16,10 +16,20 @@ import { uploadFile } from "@/lib/upload";
 const StartupForm = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pitch, setPitch] = useState("");
+  const [debouncedPitch, setDebouncedPitch] = useState(pitch);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+
+  // Debounce pitch updates
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedPitch(pitch);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [pitch]);
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,18 +41,26 @@ const StartupForm = () => {
             return;
         }
 
-        const formData = new FormData(e.currentTarget);
+        const form = e.currentTarget;
+        const formData = new FormData();
+        
+        // Manually append form fields to FormData
+        formData.append("title", form.title.value);
+        formData.append("description", form.description.value);
+        formData.append("category", form.category.value);
+        formData.append("preview", form.preview.value);
+        
         const formValues = {
-            title: formData.get("title") as string,
-            description: formData.get("description") as string,
-            category: formData.get("category") as string,
-            preview: formData.get("preview") as string,
+            title: form.title.value,
+            description: form.description.value,
+            category: form.category.value,
+            preview: form.preview.value,
             image: selectedFile,
-            pitch,
+            pitch: debouncedPitch,
         }
 
         console.log('Form Values:', formValues);
-        console.log('Form Data:', formData);
+        console.log('Form Data Entries:', Array.from(formData.entries()));
 
         await formSchema.parseAsync(formValues);
 
@@ -50,7 +68,7 @@ const StartupForm = () => {
         const { url: imageUrl } = await uploadFile(selectedFile);
         
         // Create the pitch with the image URL
-        const result = await createPitch(formData, pitch, imageUrl);
+        const result = await createPitch(formData, debouncedPitch, imageUrl);
         
         if(result.status === 'SUCCESS'){
             toast({
@@ -160,13 +178,18 @@ const StartupForm = () => {
         </label>
         <MDEditor
           value={pitch}
-          onChange={(value) => setPitch(value as string)}
+          onChange={(value) => {
+            setPitch(value || "");
+          }}
           id="pitch"
           height={300}
+          preview="edit"
+          hideToolbar={true}
           style={{ borderRadius: 20, overflow: "hidden" }}
           textareaProps={{
-            placeholder:
-              "Briefly describe your idea and what problem it solves",
+            placeholder: "Briefly describe your idea and what problem it solves",
+            "data-color-mode": "light",
+            spellCheck: false,
           }}
           previewOptions={{
             disallowedElements: ["style"],
