@@ -34,6 +34,7 @@ const StartupForm = () => {
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrors({});  // Clear previous errors
     
     try {
         if (!selectedFile) {
@@ -56,26 +57,39 @@ const StartupForm = () => {
             category: form.category.value,
             preview: form.preview.value,
             image: selectedFile,
-            pitch: debouncedPitch,
+            pitch: debouncedPitch || pitch, // Use debouncedPitch if available, otherwise use pitch
         }
 
         console.log('Form Values:', formValues);
         console.log('Form Data Entries:', Array.from(formData.entries()));
 
+        // Validate the form data
         await formSchema.parseAsync(formValues);
 
-        // Upload the image first
-        const { url: imageUrl } = await uploadFile(selectedFile);
-        
-        // Create the pitch with the image URL
-        const result = await createPitch(formData, debouncedPitch, imageUrl);
-        
-        if(result.status === 'SUCCESS'){
+        try {
+            // Upload the image first
+            const { url: imageUrl } = await uploadFile(selectedFile);
+            
+            // Create the pitch with the image URL
+            const result = await createPitch(formData, formValues.pitch, imageUrl);
+            
+            if(result.status === 'SUCCESS'){
+                toast({
+                    title: "Success",
+                    description: "Your startup pitch has been created.",
+                });
+                router.push("/dashboard");
+                router.refresh();
+            } else {
+                throw new Error(result.error || "Failed to create startup pitch");
+            }
+        } catch (error) {
+            console.error('Submission error:', error);
             toast({
-                title: "SUCCESS",
-                description: "Your startup pitch has been created successfully",
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to create startup pitch",
+                variant: "destructive",
             });
-            router.push(`/startup/${result._id}`)
         }
     } catch (error) {
         if (error instanceof z.ZodError) {
@@ -178,18 +192,13 @@ const StartupForm = () => {
         </label>
         <MDEditor
           value={pitch}
-          onChange={(value) => {
-            setPitch(value || "");
-          }}
+          onChange={(value) => setPitch(value as string)}
           id="pitch"
           height={300}
-          preview="edit"
-          hideToolbar={true}
           style={{ borderRadius: 20, overflow: "hidden" }}
           textareaProps={{
-            placeholder: "Briefly describe your idea and what problem it solves",
-            "data-color-mode": "light",
-            spellCheck: false,
+            placeholder:
+              "Briefly describe your idea and what problem it solves",
           }}
           previewOptions={{
             disallowedElements: ["style"],
