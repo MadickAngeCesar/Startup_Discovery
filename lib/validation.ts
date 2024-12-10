@@ -6,4 +6,5 @@ export const formSchema = z.object({
     category: z.string().min(3).max(20),
     image: z.instanceof(File).optional(),
     pitch: z.string().min(10),
+    preview: z.string().url("Must be a valid URL"),
 });
