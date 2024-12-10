@@ -1,7 +1,5 @@
-import {withSentryConfig} from "@sentry/nextjs";
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+import { withSentryConfig } from '@sentry/nextjs';
+const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -18,8 +16,7 @@ const nextConfig: NextConfig = {
     ]
   },
   experimental: {
-    ppr: "incremental",
-    after: true,
+    serverActions: true,
   },
   devIndicators: {
     appIsrStatus: true,
