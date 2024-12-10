@@ -14,7 +14,7 @@ Sentry.init({
       // Additional SDK configuration goes in here, for example:
       colorScheme: "system",
       // Position the feedback button on the right side
-      buttonPosition: "right",
+      buttonPosition: "left",
       // Add some margin to avoid overlapping with other components
       buttonStyle: {
         position: "fixed",
