@@ -32,6 +32,9 @@ const StartupForm = () => {
   }, [pitch]);
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    console.log('Form submission initiated');
+    console.log('Selected File:', selectedFile);
+    console.log('Debounced Pitch:', debouncedPitch);
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});  // Clear previous errors
