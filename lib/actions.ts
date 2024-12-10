@@ -18,7 +18,7 @@ export const createPitch = async (
       status: "ERROR",
     });
 
-  const { title, description, category } = Object.fromEntries(
+  const { title, description, category, preview } = Object.fromEntries(
     form.entries()
   );
 
@@ -34,6 +34,7 @@ export const createPitch = async (
       category,
       pitch,
       image: imageUrl,
+      preview,
       author: {
         _type: "reference",
         _ref: session.id,
