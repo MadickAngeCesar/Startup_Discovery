@@ -1,17 +1,17 @@
 import NextAuth from "next-auth";
-import GitHub, { GithubProfile } from "next-auth/providers/github";
+import GitHubProvider, { GitHubProfile } from "next-auth/providers/github";
 import { client } from "./sanity/lib/client";
 import { AUTHOR_BY_GITHUB_ID_QUERY } from "./sanity/lib/queries";
 import { writeClient } from "./sanity/lib/write-client";
 import { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [GitHub],
+const options = {
+  providers: [GitHubProvider],
   callbacks: {
     async signIn({
       user: { name, email, image },
-      profile: { id, login, bio },
+      profile: { id, login, bio = "" },
     }: {
       user: { name: string | null, email: string | null, image: string | null },
       profile: { id: number, login: string, bio?: string | null }
@@ -19,7 +19,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const existingUser = await client
         .fetch(AUTHOR_BY_GITHUB_ID_QUERY, {
           id,
-        });
+      });
 
       if (!existingUser) {
         await writeClient.create({
@@ -41,11 +41,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         id: token.sub,
       };
     },
-    async jwt({ token, profile }: { token: JWT; profile: GithubProfile }) {
+    async jwt({ token, profile }: { token: JWT; profile: GitHubProfile }) {
       if (profile) {
         token.id = profile.id;
       }
       return token;
     },
   },
-});
+};
+
+export default NextAuth(options);
