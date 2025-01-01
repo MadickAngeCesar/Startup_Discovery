@@ -71,7 +71,7 @@ const StartupEditForm = ({ post }: { post: Startup & { _type: "startup", _update
       router.refresh();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const fieldErrors = error.flatten().fieldErrors;
+        const fieldErrors = (error as z.ZodError).flatten().fieldErrors;
         const mappedErrors: Record<string, string> = {};
         Object.keys(fieldErrors).forEach((field) => {
           mappedErrors[field] = fieldErrors[field]?.join(", ") || "";
