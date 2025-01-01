@@ -7,29 +7,25 @@ import { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 
 const options = {
-  providers: [GitHub],
+  providers: [
+    GitHub({
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    }),
+  ],
   callbacks: {
-    async signIn({
-      user: { name, email, image },
-      profile: { id, login, bio },
-    }: {
-      user: { name: string | null, email: string | null, image: string | null },
-      profile: { id: number, login: string, bio?: string | null }
-    }) {
-      const existingUser = await client
-        .fetch(AUTHOR_BY_GITHUB_ID_QUERY, {
-          id,
-        });
+    async signIn({ user, profile }: { user: { name: string | null, email: string | null, image: string | null }, profile: { id: number, login: string, bio?: string | null } }) {
+      const existingUser = await client.fetch(AUTHOR_BY_GITHUB_ID_QUERY, { id: profile.id });
 
       if (!existingUser) {
         await writeClient.create({
           _type: "author",
-          id,
-          name,
-          username: login,
-          email,
-          image,
-          bio: bio || "",
+          id: profile.id,
+          name: user.name,
+          username: profile.login,
+          email: user.email,
+          image: user.image,
+          bio: profile.bio || "",
         });
       }
 
@@ -51,4 +47,3 @@ const options = {
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth(options);
- 
