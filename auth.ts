@@ -1,5 +1,5 @@
 import NextAuth from "next-auth";
-import GitHubProvider, { GitHubProfile } from "next-auth/providers/github";
+import GitHub, { GitHubProfile } from "next-auth/providers/github";
 import { client } from "./sanity/lib/client";
 import { AUTHOR_BY_GITHUB_ID_QUERY } from "./sanity/lib/queries";
 import { writeClient } from "./sanity/lib/write-client";
@@ -7,11 +7,11 @@ import { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 
 const options = {
-  providers: [GitHubProvider],
+  providers: [GitHub],
   callbacks: {
     async signIn({
       user: { name, email, image },
-      profile: { id, login, bio = "" },
+      profile: { id, login, bio },
     }: {
       user: { name: string | null, email: string | null, image: string | null },
       profile: { id: number, login: string, bio?: string | null }
@@ -19,7 +19,7 @@ const options = {
       const existingUser = await client
         .fetch(AUTHOR_BY_GITHUB_ID_QUERY, {
           id,
-      });
+        });
 
       if (!existingUser) {
         await writeClient.create({
@@ -50,4 +50,5 @@ const options = {
   },
 };
 
-export default NextAuth(options);
+export const { handlers, auth, signIn, signOut } = NextAuth(options);
+ 
