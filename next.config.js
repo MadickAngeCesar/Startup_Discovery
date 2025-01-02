@@ -38,20 +38,6 @@ const nextConfig = {
     // for more information.
     hideSourceMaps: true,
   },
-  // Add headers for CSP  
-  async headers() {  
-    return [  
-      {  
-        source: '/(.*)', // Apply to all routes  
-        headers: [  
-          {  
-            key: 'Content-Security-Policy',  
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' https://allowed-sources.com",  
-          },  
-        ],  
-      },  
-    ];  
-  },
 };
 
 export default withSentryConfig(nextConfig, {
