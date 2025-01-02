@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import NextAuth from "@/auth";
 
-export const GET = auth
-export const POST = auth
+export const GET = NextAuth;
+export const POST = NextAuth;
