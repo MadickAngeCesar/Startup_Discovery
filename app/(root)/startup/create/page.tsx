@@ -1,4 +1,5 @@
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth"
 import StartupForm from "@/components/StartupForm";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -7,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 const page = async () => {
   try {
-    const session = await auth();
+    const session = await getServerSession(authOptions)
     if(!session) redirect("/");
     
     return (

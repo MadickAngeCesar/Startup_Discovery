@@ -1,4 +1,5 @@
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth"
 import { StartupCardSkeleton } from "@/components/StartupCard";
 import UserStartups from "@/components/UserStartups";
 import { client } from "@/sanity/lib/client";
@@ -11,7 +12,7 @@ export const experiment_ppr = true;
 
 const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   const id = (await params).id;
-  const session = await auth();
+  const session = await getServerSession(authOptions)
   const user = await client.fetch(AUTHOR_BY_ID_QUERY, { id });
   if (!user) return notFound();
   return (

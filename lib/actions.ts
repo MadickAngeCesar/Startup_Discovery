@@ -1,6 +1,7 @@
 "use server";
 
-import {auth} from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth"
 import { parseServerActionResponse } from "./utils";
 import slugify from "slugify";
 import { writeClient } from "@/sanity/lib/write-client";
@@ -10,7 +11,7 @@ export const createPitch = async (
   pitch: string,
   imageUrl: string
 ) => {
-  const session = await auth();
+  const session = await getServerSession(authOptions)
 
   if (!session)
     return parseServerActionResponse({
