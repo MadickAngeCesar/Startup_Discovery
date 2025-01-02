@@ -1,89 +1,88 @@
-import NextAuth from "next-auth";
-import GitHubProvider from "next-auth/providers/github";
-import { client } from "./sanity/lib/client";
-import { writeClient } from "./sanity/lib/write-client";
-import { AUTHOR_BY_GITHUB_ID_QUERY } from "./sanity/lib/queries";
-import type { Session } from "next-auth";
-import type { JWT } from "next-auth/jwt";
+import NextAuth, { NextAuthOptions } from "next-auth"
+import GithubProvider from "next-auth/providers/github"
+import { client } from "./sanity/lib/client"
+import { AUTHOR_BY_GITHUB_ID_QUERY } from "./sanity/lib/queries"
+import { writeClient } from "./sanity/lib/write-client"
 
-interface CustomUser {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
+interface GitHubProfile {
+  id: string
+  login: string
+  bio?: string | null
 }
 
-interface CustomProfile {
-  id: number;
-  login: string;
-  bio?: string | null;
+interface SessionUser {
+  name?: string | null
+  email?: string | null
+  image?: string | null
 }
 
-if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
-  throw new Error("Missing GitHub OAuth environment variables.");
-}
-
-const options = {
+export const authOptions: NextAuthOptions = {
   providers: [
-    GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    GithubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID ?? "",
+      clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
     }),
   ],
   callbacks: {
-    async signIn({
-      user,
-      profile,
-    }: {
-      user: CustomUser;
-      profile?: CustomProfile;
+    async signIn({ 
+      user, 
+      profile 
+    }: { 
+      user: SessionUser
+      profile?: GitHubProfile 
     }) {
-      if (!profile || !user) return false;
+      if (!user?.name || !profile?.id) return false
 
-      const existingUser = await client.fetch(AUTHOR_BY_GITHUB_ID_QUERY, { id: profile.id });
+      const existingUser = await client.fetch(AUTHOR_BY_GITHUB_ID_QUERY, {
+        id: profile.id,
+      })
+
       if (!existingUser) {
-        await writeClient.createOrReplace({
+        await writeClient.create({
           _type: "author",
-          _id: `author.${profile.id}`,
           id: profile.id,
-          name: user.name || "Anonymous",
+          name: user.name,
           username: profile.login,
           email: user.email || "",
           image: user.image || "",
           bio: profile.bio || "",
-        });
+        })
       }
 
-      return true;
+      return true
     },
-    async session({
-      session,
-      token,
-    }: {
-      session: Session;
-      token: JWT;
+    async jwt({ 
+      token, 
+      account, 
+      profile 
+    }: { 
+      token: any
+      account: any
+      profile?: GitHubProfile 
     }) {
-      if (token?.sub) {
-        return {
-          ...session,
-          id: token.sub,
-        };
+      if (account && profile) {
+        const user = await client.fetch(AUTHOR_BY_GITHUB_ID_QUERY, {
+          id: profile.id,
+        })
+
+        token.id = user?._id
       }
-      return session;
+      return token
     },
-    async jwt({
-      token,
-      profile,
-    }: {
-      token: JWT;
-      profile?: CustomProfile;
+    async session({ 
+      session, 
+      token 
+    }: { 
+      session: any
+      token: any 
     }) {
-      if (profile?.id) {
-        token.id = profile.id;
+      return {
+        ...session,
+        id: token.id,
       }
-      return token;
     },
   },
-};
+}
 
-export default NextAuth(options);
+export const getAuthSession = () => getServerSession(authOptions)
+export const handler = NextAuth(authOptions)

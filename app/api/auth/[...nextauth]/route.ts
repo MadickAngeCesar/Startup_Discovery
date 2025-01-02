@@ -1,4 +1,3 @@
-import NextAuth from "@/auth";
-
-export const GET = NextAuth;
-export const POST = NextAuth;
+// auth/[...nextauth]/route.ts
+import { handler } from "@/auth"
+export { handler as GET, handler as POST }
