@@ -47,6 +47,10 @@ export default withSentryConfig(nextConfig, {
   //   urlPrefix, include, ignore
 
   silent: true, // Suppresses all logs
-  org: "your-org-name",
-  project: "your-project-name",
+  
+  // The 'org' value should be your Sentry organization slug
+  org: "madick",
+
+  // The 'project' value should be your Sentry project slug
+  project: "javascript-nextjs",
 });
