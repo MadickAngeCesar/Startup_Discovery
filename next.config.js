@@ -24,6 +24,7 @@ const nextConfig = {
   },
   experimental: {
     serverActions: true,
+    after: true,
   },
   devIndicators: {
     buildActivityPosition: BUILD_ACTIVITY_POSITION.BOTTOM_RIGHT,
