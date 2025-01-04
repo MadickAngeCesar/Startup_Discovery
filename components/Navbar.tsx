@@ -1,14 +1,13 @@
-import { getServerSession } from "next-auth"
 import Link from "next/link"
 import Image from "next/image"
-import { BadgePlus } from "lucide-react"
+import { BadgePlus, LogOut } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { SignInButton } from "./auth/SignInButton"
-import { SignOutButton } from "./auth/SignOutButton"
-import { authOptions } from "@/auth"
+//import { SignInButton } from "./auth/SignInButton"
+//import { SignOutButton } from "./auth/SignOutButton"
+import { auth, signOut, signIn } from "@/auth";
 
 export default async function Navbar() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   return (
     <header className="px-5 py-3 bg-white shadow-sm font-work-sans">
@@ -25,7 +24,18 @@ export default async function Navbar() {
                 <BadgePlus className="size-6 sm:hidden" />
               </Link>
 
-              <SignOutButton />
+              <form
+                action={async () => {
+                  "use server";
+
+                  await signOut({ redirectTo: "/" });
+                }}
+              >
+                <button type="submit">
+                  <span className="max-sm:hidden">Logout</span>
+                  <LogOut className="size-6 sm:hidden text-red-500" />
+                </button>
+              </form>
 
               <Link href={`/user/${session.id}`}>
                 <Avatar className="size-10">
@@ -38,7 +48,15 @@ export default async function Navbar() {
               </Link>
             </>
           ) : (
-            <SignInButton />
+            <form
+              action={async () => {
+                "use server";
+
+                await signIn("github");
+              }}
+            >
+              <button type="submit">Login</button>
+            </form>
           )}
         </div>
       </nav>

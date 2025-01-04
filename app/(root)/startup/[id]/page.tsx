@@ -8,8 +8,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth"
+import { auth } from "@/auth"
 import { writeClient } from "@/sanity/lib/write-client";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
@@ -41,7 +40,7 @@ interface PageProps {
 
 const page = async ({ params }: PageProps) => {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     const [post, editorPosts] = await Promise.all([
       client.fetch(STARTUP_BY_ID_QUERY, { id: params.id }),
       client.fetch(PLAYLIST_BY_SLUG_QUERY, { slug: "editor-picks-new" }),

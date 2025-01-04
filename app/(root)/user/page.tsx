@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth"
+import { auth } from "@/auth"
 
 export default async function UserPage() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   if (!session?.id) {
     redirect("/");

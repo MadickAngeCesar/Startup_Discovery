@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth"
+import { auth } from "@/auth"
 import { client } from "@/sanity/lib/client";
 import { STARTUP_BY_ID_QUERY } from "@/sanity/lib/queries";
 import { notFound, redirect } from "next/navigation";
@@ -9,7 +8,7 @@ export const experimental_ppr = true;
 
 const page = async ({ params }: { params: { id: string } }) => {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) redirect("/");
 
     const post = await client.fetch(STARTUP_BY_ID_QUERY, { id: params.id });
