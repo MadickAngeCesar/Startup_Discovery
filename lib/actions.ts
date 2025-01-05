@@ -1,3 +1,4 @@
+"use server";
 import { auth } from "@/auth"
 import { parseServerActionResponse } from "./utils";
 import slugify from "slugify";
