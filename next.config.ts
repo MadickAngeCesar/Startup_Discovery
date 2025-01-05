@@ -23,6 +23,7 @@ const nextConfig = {
     ]
   },
   experimental: {
+    ppr: "incremental",
     serverActions: true,
     after: true,
   },
