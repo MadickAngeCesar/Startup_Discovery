@@ -52,7 +52,7 @@ export default async function Navbar() {
               action={async () => {
                 "use server";
 
-                await signIn("github");
+                await signIn('github');
               }}
             >
               <button type="submit">Login</button>
