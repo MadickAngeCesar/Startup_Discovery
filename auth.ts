@@ -90,22 +90,27 @@ export const handler = NextAuth(authOptions)*/
 
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
+import { getServerSession } from "next-auth/next";
+import { signIn as authSignIn, signOut as authSignOut } from "next-auth/react";
 import { AUTHOR_BY_GITHUB_ID_QUERY } from "@/sanity/lib/queries";
 import { client } from "@/sanity/lib/client";
 import { writeClient } from "@/sanity/lib/write-client";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [GitHub],
+const options = {
+  providers: [
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID!,
+      clientSecret: process.env.AUTH_GITHUB_SECRET!,
+    }),
+  ],
   callbacks: {
-    async signIn({
-      user: { name, email, image },
-      profile: { id, login, bio },
-    }) {
+    async signIn({ user, profile }) {
+      const { id, login, bio } = profile;
+      const { name, email, image } = user;
+
       const existingUser = await client
         .withConfig({ useCdn: false })
-        .fetch(AUTHOR_BY_GITHUB_ID_QUERY, {
-          id,
-        });
+        .fetch(AUTHOR_BY_GITHUB_ID_QUERY, { id });
 
       if (!existingUser) {
         await writeClient.create({
@@ -125,18 +130,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (account && profile) {
         const user = await client
           .withConfig({ useCdn: false })
-          .fetch(AUTHOR_BY_GITHUB_ID_QUERY, {
-            id: profile?.id,
-          });
+          .fetch(AUTHOR_BY_GITHUB_ID_QUERY, { id: profile?.id });
 
         token.id = user?._id;
       }
-
       return token;
     },
     async session({ session, token }) {
-      Object.assign(session, { id: token.id });
+      session.id = token.id;
       return session;
     },
   },
-});
+};
+
+const authHandler = NextAuth(options);
+
+// Export handlers for API route
+export { authHandler as GET, authHandler as POST };
+
+// Export `auth`, `signIn`, and `signOut` utilities for client usage
+export const auth = async () => await getServerSession(options);
+export const signIn = authSignIn;
+export const signOut = authSignOut;
