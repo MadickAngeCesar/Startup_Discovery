@@ -1,10 +1,10 @@
-import NextAuth from "next-auth";
+import NextAuth, { getServerSession } from "next-auth";
 import GitHub from "next-auth/providers/github";
 import { client } from "@/sanity/lib/client";
 import { writeClient } from "@/sanity/lib/write-client";
 import { AUTHOR_BY_GITHUB_ID_QUERY } from "@/sanity/lib/queries";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const authOptions = {
   providers: [GitHub],
   callbacks: {
     async signIn({ user, profile }) {
@@ -44,4 +44,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
   },
-});
+};
+
+const nextAuthHandler = NextAuth(authOptions);
+
+export async function auth() {
+  return getServerSession(authOptions);
+}
+
+export { nextAuthHandler as GET, nextAuthHandler as POST };
