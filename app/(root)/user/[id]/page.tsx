@@ -1,11 +1,11 @@
-import { auth } from "@/auth"
+import { auth } from "@/auth";
 import { StartupCardSkeleton } from "@/components/StartupCard";
 import UserStartups from "@/components/UserStartups";
+import { useEffect, useState } from "react";
 import { client } from "@/sanity/lib/client";
 import { AUTHOR_BY_ID_QUERY } from "@/sanity/lib/queries";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 import * as Sentry from "@sentry/nextjs";
 
 export const experiment_ppr = true;
@@ -17,7 +17,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
 
     const user = await client.fetch(AUTHOR_BY_ID_QUERY, { id });
     if (!user) return notFound();
-    
+
     return (
       <>
         <section className="profile_container">
@@ -47,9 +47,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
               {session?.id == id ? "Your" : "All"} Startups
             </p>
             <ul className="card_grid-sm">
-              <Suspense fallback={<StartupCardSkeleton/>}>
-                <UserStartups id={id} />
-              </Suspense>
+              <UserStartupsWrapper id={id} />
             </ul>
           </div>
         </section>
@@ -59,6 +57,22 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
     Sentry.captureException(error);
     return notFound();
   }
+};
+const UserStartupsWrapper = ({ id }: { id: string }) => {
+  const [startups, setStartups] = useState<React.ReactNode>(
+    <StartupCardSkeleton />
+  );
+
+  useEffect(() => {
+    const fetchStartups = async () => {
+      const result = await UserStartups({ id });
+      setStartups(result);
+    };
+
+    fetchStartups();
+  }, [id]);
+
+  return <>{startups}</>;
 };
 
 export default page;
