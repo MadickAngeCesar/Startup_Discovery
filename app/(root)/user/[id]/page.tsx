@@ -1,8 +1,6 @@
-"use client";
 import { auth } from "@/auth";
 import { StartupCardSkeleton } from "@/components/StartupCard";
 import UserStartups from "@/components/UserStartups";
-import { useEffect, useState } from "react";
 import { client } from "@/sanity/lib/client";
 import { AUTHOR_BY_ID_QUERY } from "@/sanity/lib/queries";
 import Image from "next/image";
@@ -11,9 +9,9 @@ import * as Sentry from "@sentry/nextjs";
 
 export const experiment_ppr = true;
 
-const page = async ({ params }: { params: Promise<{ id: string }> }) => {
+export default async function page({ params }: { params: { id: string } }) {
   try {
-    const id = (await params).id;
+    const id = params.id;
     const session = await auth();
 
     const user = await client.fetch(AUTHOR_BY_ID_QUERY, { id });
@@ -58,22 +56,4 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
     Sentry.captureException(error);
     return notFound();
   }
-};
-const UserStartupsWrapper = ({ id }: { id: string }) => {
-  const [startups, setStartups] = useState<React.ReactNode>(
-    <StartupCardSkeleton />
-  );
-
-  useEffect(() => {
-    const fetchStartups = async () => {
-      const result = await UserStartups({ id });
-      setStartups(result);
-    };
-
-    fetchStartups();
-  }, [id]);
-
-  return <>{startups}</>;
-};
-
-export default page;
+}
