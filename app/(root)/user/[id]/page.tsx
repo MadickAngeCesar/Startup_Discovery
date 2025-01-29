@@ -1,3 +1,4 @@
+"use client";
 import { auth } from "@/auth";
 import { StartupCardSkeleton } from "@/components/StartupCard";
 import UserStartups from "@/components/UserStartups";
