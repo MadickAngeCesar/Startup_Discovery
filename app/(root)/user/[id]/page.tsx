@@ -1,17 +1,19 @@
 import { auth } from "@/auth";
-import { StartupCardSkeleton } from "@/components/StartupCard";
-import UserStartups from "@/components/UserStartups";
+//import { StartupCardSkeleton } from "@/components/StartupCard";
+//import UserStartups from "@/components/UserStartups";
+//import { useEffect, useState } from "react";
 import { client } from "@/sanity/lib/client";
 import { AUTHOR_BY_ID_QUERY } from "@/sanity/lib/queries";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
+import UserStartupsWrapper from "@/components/UserStartupsWrapper"; // Import the new Client Component
 
 export const experiment_ppr = true;
 
-export default async function page({ params }: { params: { id: string } }) {
+const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   try {
-    const id = params.id;
+    const id = (await params).id;
     const session = await auth();
 
     const user = await client.fetch(AUTHOR_BY_ID_QUERY, { id });
@@ -56,4 +58,6 @@ export default async function page({ params }: { params: { id: string } }) {
     Sentry.captureException(error);
     return notFound();
   }
-}
+};
+
+export default page;
