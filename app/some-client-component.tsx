@@ -1,5 +1,5 @@
 "use client";
-//import { signIn } from "next-auth/react";
+
 import { auth } from "@/auth";
 import { StartupCardSkeleton } from "@/components/StartupCard";
 import UserStartups from "@/components/UserStartups";
@@ -12,7 +12,11 @@ import * as Sentry from "@sentry/nextjs";
 
 export const experiment_ppr = true;
 
-const page = async ({ params }: { params: Promise<{ id: string }> }) => {
+export default async function page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   try {
     const id = (await params).id;
     const session = await auth();
@@ -59,7 +63,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
     Sentry.captureException(error);
     return notFound();
   }
-};
+}
 const UserStartupsWrapper = ({ id }: { id: string }) => {
   const [startups, setStartups] = useState<React.ReactNode>(
     <StartupCardSkeleton />
@@ -76,5 +80,3 @@ const UserStartupsWrapper = ({ id }: { id: string }) => {
 
   return <>{startups}</>;
 };
-
-export default page;
